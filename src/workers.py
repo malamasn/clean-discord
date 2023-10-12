@@ -45,9 +45,9 @@ def antispam(conversation):
 
 def worker_regex(filename, input_folder, output_folder, adv_prog=False, debug=False):
     if debug: profiler = Profiler(); profiler.start()
-    
-    messages, ch=json.load(io.open(os.path.join(input_folder,filename), mode="r", encoding="utf-8"))["messages"], re.search(r"\[\d{18,}\](?:\s\[part \d{1,3}\])*", filename).group(0)
-    temp= {"channel":ch, "stats": {"original":len(messages), "removed": [], "current":[]}, "conversations":[]}
+    file_data = json.load(io.open(os.path.join(input_folder,filename), mode="r", encoding="utf-8"))
+    messages, ch=file_data["messages"], re.search(r"\[\d{18,}\](?:\s\[part \d{1,3}\])*", filename).group(0)
+    temp= {"channel":ch, "channel_name": file_data["guild"]["name"], "stats": {"original":len(messages), "removed": [], "current":[]}, "conversations":[]}
     msg, last_seen, last_author, curr_time=[],None,"",0
     
     if adv_prog:
