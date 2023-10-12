@@ -49,9 +49,9 @@ def clean(text, author=False):
     if text[text.find(': ')+2:].strip().lower().startswith(bot_prefixes): return None #handle bot commands
     if author and text.startswith("Deleted User"): text=gen_name(author)+text[len("Deleted User"):]
     
-    text=text.translate(normal_map)#handle special chars from other langs
+    # text=text.translate(normal_map)#handle special chars from other langs
     text= re.sub(r1, gen_name, text.strip()) #replace "deleted users" with names
-    text= re.sub(r2, r"\1\2\2\3\3\3\4", text.strip()) #remove urls, emails, code blocks, custom emojis, non-emoji, punctuation, letters, and phone numbers
+    # text= re.sub(r2, r"\1\2\2\3\3\3\4", text.strip()) #remove urls, emails, code blocks, custom emojis, non-emoji, punctuation, letters, and phone numbers
     text= re.sub(r3, " ", text.strip()) #handle... interesting spaces
     text= "".join(list(map(convemojis,text.strip()))) #translate emojis to their `:text:` shorthand form
     text= "\\n".join([ln.strip().strip("\t") for ln in text.split("\n")]) #handle newlines
