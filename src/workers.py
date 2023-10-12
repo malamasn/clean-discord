@@ -55,24 +55,44 @@ def worker_regex(filename, input_folder, output_folder, adv_prog=False, debug=Fa
         register_reporter(reporter)
         iterator=atpbar(messages, name=ch)
     else: iterator=messages
-    
+
+    timestamps, authors_lists = [[]], [[]]
     for data in iterator:
-        if data['author']['isBot'] == False and data["type"] == "Default" and data["content"] and len(data["content"])<500:
+        if data['author']['isBot'] == False and data["type"] == "Default" and data["content"] and len(data["content"])<2000:
             cleaned=clean(f'{data["author"]["name"].replace(":","")}: {data["content"]}', author=data["author"]["id"])
             if cleaned:
                 if last_author != data["author"]["id"] or len(msg)==0:
-                    msg.append([cleaned, data["author"]["id"]])
+                    # msg.append([cleaned, data["author"]["id"]])
                     curr_time=ciso8601.parse_datetime(data['timestamp'])
                     if (last_seen and ((curr_time - last_seen).total_seconds() > 600 and len(msg) > 1)):
                         #msg="\t".join(msg)
                         temp["conversations"].append(msg)
                         msg=[]; last_author=""; last_seen=None
+                        msg.append([cleaned, data["author"]["id"]])
+                        last_author = data["author"]["id"]
+                        last_seen = curr_time
+                        timestamps.append([curr_time])
+                        authors_lists.append([data["author"]["name"]])
+                    else:
+                        msg.append([cleaned, data["author"]["id"]])
+                        timestamps[-1].append(curr_time)
+                        if data["author"]["name"] not in authors_lists[-1]:
+                            authors_lists[-1].append(data["author"]["name"])
                     last_author = data["author"]["id"]
                 else:
                     msg[-1][0]+=f"\\n{cleaned[cleaned.find(': ')+2:]}"
+                    timestamps[-1].append(curr_time)
+                    if data["author"]["name"] not in authors_lists[-1]:
+                        authors_lists[-1].append(data["author"]["name"])
         last_seen = curr_time
-    if msg!=[]: temp["conversations"].append(msg.strip().replace("\t", " ")); msg=[]
     
+    if msg!=[]: temp["conversations"].append(str(msg).strip().replace("\t", " ")); msg=[]
+
+    temp["timestamps"] = []
+    for ts in timestamps:
+        temp["timestamps"].append([ts[0].strftime("%Y-%m-%d, %H:%M"), ts[-1].strftime("%Y-%m-%d, %H:%M")])
+    
+    temp["authors"] = authors_lists
     temp["stats"]["current"].append(sum([len(convo) for convo in temp["conversations"]]))
     temp["stats"]["removed"].append(temp["stats"]["original"] - temp["stats"]["current"][-1])
     json.dump(temp, io.open(os.path.join(output_folder,f"{ch}.temp"), mode="w", encoding="utf-8"))
