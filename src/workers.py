@@ -46,7 +46,7 @@ def antispam(conversation):
 def worker_regex(filename, input_folder, output_folder, adv_prog=False, debug=False):
     if debug: profiler = Profiler(); profiler.start()
     
-    messages, ch=json.load(io.open(os.path.join(input_folder,filename), mode="r", encoding="utf-8"))["messages"], re.search(r"\[\d{18}\](?:\s\[part \d{1,3}\])*", filename).group(0)
+    messages, ch=json.load(io.open(os.path.join(input_folder,filename), mode="r", encoding="utf-8"))["messages"], re.search(r"\[\d{18,}\](?:\s\[part \d{1,3}\])*", filename).group(0)
     temp= {"channel":ch, "stats": {"original":len(messages), "removed": [], "current":[]}, "conversations":[]}
     msg, last_seen, last_author, curr_time=[],None,"",0
     
@@ -84,7 +84,7 @@ def worker_regex(filename, input_folder, output_folder, adv_prog=False, debug=Fa
 
 def worker_detox(filename, output_folder, debug=False):
     if debug: profiler = Profiler(); profiler.start()
-    ch=re.search(r"\[\d{18}\](?:\s\[part \d{1,3}\])*", filename).group(0)
+    ch=re.search(r"\[\d{18,}\](?:\s\[part \d{1,3}\])*", filename).group(0)
     temp, temp_lst = json.load(io.open(os.path.join(output_folder,f"{ch}.json"), mode="r", encoding="utf-8")), []
     
     for convo in temp["conversations"]:
@@ -105,7 +105,7 @@ def worker_detox(filename, output_folder, debug=False):
             
 def worker_antispam(filename, output_folder, debug=False):
     if debug: profiler = Profiler(); profiler.start()
-    ch=re.search(r"\[\d{18}\](?:\s\[part \d{1,3}\])*", filename).group(0)
+    ch=re.search(r"\[\d{18,}\](?:\s\[part \d{1,3}\])*", filename).group(0)
     temp, temp_lst = json.load(io.open(os.path.join(output_folder,f"{ch}.json"), mode="r", encoding="utf-8")), []
     
     for convo in temp["conversations"]:
