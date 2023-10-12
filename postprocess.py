@@ -18,8 +18,8 @@ def str2bool(v):
 parser = argparse.ArgumentParser(description='Postprocess cleaned Discord data')
 parser.add_argument('-dir', type=str, default="output",
                     help='the data folder containing the cleaned .jsons')
-parser.add_argument('-out', type=str, default="output_converted",
-                    help='the folder to output postprocessed files')
+parser.add_argument('-out', type=str, default="discord_data.json",
+                    help='the json file to output all postprocessed data')
 parser.add_argument("-overwrite", type=str2bool, nargs='?', const=True, default=False, 
                     help="overwrite existing files")
 
@@ -39,12 +39,12 @@ def replace_newlines(item, value = '\n'):
 
 if __name__ == '__main__':
     tasks=os.listdir(args.dir)
+    discord_data = []
     for task in tasks:
         data = json.load(io.open(os.path.join(args.dir,task), encoding="utf-8"))
         conversations = []
         for d in data["conversations"]:
             conversations.append([i[0] for i in d])
-        data["conversations"] = []
         
         for i in range(len(conversations)):
             conversation = conversations[i]
@@ -56,15 +56,17 @@ if __name__ == '__main__':
             clean_conversation = re.sub(pattern, '', raw_conversation)
             
             authors = data["authors"][i]
+            channel_name = data["channel_name"]
             timestamp_first = data["timestamps"][i][0]
             timestamp_last = data["timestamps"][i][1]
-            data["conversations"].append({
+            discord_data.append({
                 "raw_conversation": raw_conversation,
                 "conversation": clean_conversation,
                 "authors": authors,
+                "channel": channel_name,
                 "timestamp_first": timestamp_first,
                 "timestamp_last": timestamp_last
             })
         
-        with open(os.path.join(args.dir,task), "w") as json_file:
-            json.dump(data, json_file)
+    with open(os.path.join(args.dir,args.out), "w") as json_file:
+        json.dump(discord_data, json_file)
